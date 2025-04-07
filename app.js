@@ -12,11 +12,25 @@ document.addEventListener('DOMContentLoaded', function() {
     const todayStr = formatDateForData(today);
     const yesterdayStr = formatDateForData(yesterday);
     
-    // Updated sample data with more varied dates including today and yesterday
+    // Fixed random names for visits
+    const visitNames = [
+        'Jan Novák',
+        'Marie Svobodová',
+        'Petr Novotný',
+        'Jana Dvořáková',
+        'Josef Černý',
+        'Eva Procházková',
+        'Pavel Kučera',
+        'Hana Veselá',
+        'Jaroslav Horák',
+        'Anna Němcová'
+    ];
+    
+    // Updated sample data with fixed random names
     const visits = [
         {
             id: 1,
-            title: 'Preventivní prohlídka',
+            title: visitNames[0],
             date: todayStr,
             time: '09:30',
             duration: 45,
@@ -25,7 +39,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         {
             id: 2,
-            title: 'Odběr krve',
+            title: visitNames[1],
             date: todayStr,
             time: '11:00',
             duration: 15,
@@ -34,7 +48,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         {
             id: 3,
-            title: 'Kontrola po zákroku',
+            title: visitNames[2],
             date: yesterdayStr,
             time: '14:45',
             duration: 30,
@@ -43,7 +57,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         {
             id: 4,
-            title: 'Konzultace s kardiologem',
+            title: visitNames[3],
             date: yesterdayStr,
             time: '08:15',
             duration: 60,
@@ -52,7 +66,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         {
             id: 5,
-            title: 'Rehabilitace',
+            title: visitNames[4],
             date: '2023-05-02', 
             time: '13:30',
             duration: 45,
@@ -61,7 +75,7 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         {
             id: 6,
-            title: 'Očkování',
+            title: visitNames[5],
             date: '2023-05-02',
             time: '16:00',
             duration: 10,
