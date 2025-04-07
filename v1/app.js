@@ -382,12 +382,15 @@ document.addEventListener('DOMContentLoaded', function() {
                         detailView.style.display = 'none';
                         document.getElementById('visits-list').style.display = 'flex';
                         document.querySelector('header').style.display = 'flex';
-                    }}
+                    }, isDelete: true }
                 ];
                 
                 menuItems.forEach(item => {
                     const menuItem = document.createElement('div');
                     menuItem.className = 'context-menu-item';
+                    if (item.isDelete) {
+                        menuItem.setAttribute('data-action', 'delete');
+                    }
                     menuItem.innerHTML = `<i class="fas ${item.icon}"></i> ${item.text}`;
                     menuItem.addEventListener('click', function() {
                         contextMenu.remove();
@@ -435,12 +438,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const menuItems = [
             { text: 'Otevřít návštěvu', icon: 'fa-external-link-alt', action: () => openVisitDetail(visit) },
             { text: 'Přejmenovat návštěvu', icon: 'fa-edit', action: () => renameVisit(visit) },
-            { text: 'Smazat návštěvu', icon: 'fa-trash-alt', action: () => deleteVisit(visit) }
+            { text: 'Smazat návštěvu', icon: 'fa-trash-alt', action: () => deleteVisit(visit), isDelete: true }
         ];
         
         menuItems.forEach(item => {
             const menuItem = document.createElement('div');
             menuItem.className = 'context-menu-item';
+            if (item.isDelete) {
+                menuItem.setAttribute('data-action', 'delete');
+            }
             menuItem.innerHTML = `<i class="fas ${item.icon}"></i> ${item.text}`;
             menuItem.addEventListener('click', function() {
                 contextMenu.remove();
@@ -481,16 +487,88 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Function to rename a visit
     function renameVisit(visit) {
-        const newName = prompt('Zadejte nový název návštěvy:', visit.title);
-        if (newName && newName.trim() !== '') {
-            // Update visit in the data
-            visit.title = newName.trim();
-            
-            // Refresh the list to show the updated name
-            populateVisitsList();
-            
-            console.log(`Visit ${visit.id} renamed to "${newName}"`);
+        // Remove any existing modals
+        const existingModal = document.querySelector('.modal-overlay');
+        if (existingModal) {
+            existingModal.remove();
         }
+
+        // Create modal overlay
+        const modalOverlay = document.createElement('div');
+        modalOverlay.className = 'modal-overlay';
+
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'modal';
+
+        // Create modal content
+        modal.innerHTML = `
+            <div class="modal-header">
+                <h2>Přejmenovat návštěvu "${visit.title}"</h2>
+                <button class="modal-close">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="modal-input-group">
+                    <label for="new-name">Nové jméno</label>
+                    <input type="text" id="new-name" class="modal-input" value="${visit.title}">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="modal-btn modal-btn-primary">Přejmenovat</button>
+                <button class="modal-btn modal-btn-secondary">Zrušit</button>
+            </div>
+        `;
+
+        // Add modal to overlay
+        modalOverlay.appendChild(modal);
+        document.body.appendChild(modalOverlay);
+
+        // Handle close button
+        const closeBtn = modal.querySelector('.modal-close');
+        closeBtn.addEventListener('click', () => modalOverlay.remove());
+
+        // Handle cancel button
+        const cancelBtn = modal.querySelector('.modal-btn-secondary');
+        cancelBtn.addEventListener('click', () => modalOverlay.remove());
+
+        // Handle rename button
+        const renameBtn = modal.querySelector('.modal-btn-primary');
+        const input = modal.querySelector('#new-name');
+        
+        // Focus the input
+        input.focus();
+        input.select();
+
+        // Handle rename action
+        const handleRename = () => {
+            const newName = input.value.trim();
+            if (newName !== '') {
+                visit.title = newName;
+                populateVisitsList();
+                modalOverlay.remove();
+                console.log(`Visit ${visit.id} renamed to "${newName}"`);
+            }
+        };
+
+        renameBtn.addEventListener('click', handleRename);
+        
+        // Handle Enter key
+        input.addEventListener('keyup', (e) => {
+            if (e.key === 'Enter') {
+                handleRename();
+            } else if (e.key === 'Escape') {
+                modalOverlay.remove();
+            }
+        });
+
+        // Close modal when clicking outside
+        modalOverlay.addEventListener('click', (e) => {
+            if (e.target === modalOverlay) {
+                modalOverlay.remove();
+            }
+        });
     }
     
     // Function to delete a visit
@@ -624,11 +702,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     // Event handlers for buttons
-    document.getElementById('menu-btn').addEventListener('click', function() {
-        console.log('Menu button clicked');
-        // Here you would toggle a side navigation
-    });
-
     document.getElementById('add-btn').addEventListener('click', function() {
         console.log('Add button in header clicked');
         showAddOptionsScreen();

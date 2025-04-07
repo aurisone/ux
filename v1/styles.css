@@ -88,7 +88,7 @@ main {
     list-style: none;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-lg);
+    gap: 0;
     padding-bottom: 80px;
 }
 
@@ -99,7 +99,7 @@ main {
     color: var(--slate-500);
     padding: var(--spacing-xs) var(--spacing-lg);
     margin-top: var(--spacing-md);
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: 0;
     position: sticky;
     top: 72px; /* Adjust based on header height */
     background-color: var(--slate-100);
@@ -111,10 +111,12 @@ main {
     display: flex;
     flex-direction: column;
     margin-left: 0;
+    margin-top: 0;
     background-color: white;
     border-radius: 8px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     overflow: hidden;
+    margin-bottom: var(--spacing-lg);
 }
 
 .visit-item {
@@ -604,7 +606,6 @@ main {
     display: flex;
     align-items: center;
     gap: var(--spacing-md);
-    color: var(--slate-700);
     transition: background-color 0.2s;
 }
 
@@ -618,8 +619,20 @@ main {
 
 .context-menu-item i {
     color: var(--slate-500);
-    width: 20px;
-    text-align: center;
+    width: 16px;
+}
+
+/* Style for delete menu item */
+.context-menu-item[data-action="delete"] {
+    color: #ef4444;
+}
+
+.context-menu-item[data-action="delete"] i {
+    color: #ef4444;
+}
+
+.context-menu-item[data-action="delete"]:hover {
+    background-color: #fee2e2;
 }
 
 /* Separator in context menu */
@@ -627,4 +640,247 @@ main {
     height: 1px;
     background-color: var(--slate-200);
     margin: 4px 0;
+}
+
+/* Rename Modal */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 200;
+}
+
+.modal {
+    background-color: white;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    overflow: hidden;
+}
+
+.modal-header {
+    padding: var(--spacing-lg);
+    position: relative;
+}
+
+.modal-header h2 {
+    font-size: var(--font-lg);
+    font-weight: 600;
+    color: var(--slate-900);
+    margin-right: var(--spacing-xl);
+}
+
+.modal-close {
+    position: absolute;
+    top: var(--spacing-lg);
+    right: var(--spacing-lg);
+    background: none;
+    border: none;
+    color: var(--slate-400);
+    cursor: pointer;
+    padding: var(--spacing-xs);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+}
+
+.modal-close:hover {
+    background-color: var(--slate-100);
+}
+
+.modal-body {
+    padding: 0 var(--spacing-lg);
+}
+
+.modal-input-group {
+    margin-bottom: var(--spacing-lg);
+}
+
+.modal-input-group label {
+    display: block;
+    font-size: var(--font-sm);
+    font-weight: 500;
+    color: var(--slate-700);
+    margin-bottom: var(--spacing-xs);
+}
+
+.modal-input {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: 1px solid var(--slate-200);
+    border-radius: 8px;
+    font-size: var(--font-md);
+    color: var(--slate-900);
+    background-color: white;
+}
+
+.modal-input:focus {
+    outline: none;
+    border-color: var(--slate-400);
+}
+
+.modal-footer {
+    padding: var(--spacing-lg);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+}
+
+.modal-btn {
+    width: 100%;
+    padding: var(--spacing-md);
+    border: none;
+    border-radius: 8px;
+    font-size: var(--font-md);
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.modal-btn-primary {
+    background-color: var(--slate-800);
+    color: white;
+}
+
+.modal-btn-primary:hover {
+    background-color: var(--slate-700);
+}
+
+.modal-btn-secondary {
+    background-color: var(--slate-100);
+    color: var(--slate-900);
+}
+
+.modal-btn-secondary:hover {
+    background-color: var(--slate-200);
+}
+
+@media (max-width: 480px) {
+    .modal {
+        width: 95%;
+    }
+}
+
+/* Drawer Menu */
+.drawer-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(15, 23, 42, 0.4);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease;
+    z-index: 150;
+}
+
+.drawer-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.drawer {
+    position: fixed;
+    top: 0;
+    left: -320px;
+    width: 320px;
+    height: 100vh;
+    background-color: white;
+    box-shadow: 4px 0 8px rgba(0, 0, 0, 0.1);
+    transition: left 0.3s ease;
+    z-index: 151;
+    display: flex;
+    flex-direction: column;
+}
+
+.drawer.active {
+    left: 0;
+}
+
+.drawer-logo {
+    padding: var(--spacing-xl);
+    border-bottom: 1px solid var(--slate-200);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 80px;
+    position: relative;
+}
+
+.drawer-logo-image {
+    height: 32px;
+    width: auto;
+    object-fit: contain;
+}
+
+.drawer-close {
+    color: var(--slate-800);
+    width: 32px;
+    height: 32px;
+}
+
+.drawer-close:hover {
+    background-color: var(--slate-100);
+    color: var(--slate-800);
+}
+
+.drawer-content {
+    flex: 1;
+    padding: var(--spacing-lg) 0;
+}
+
+.drawer-menu-item {
+    display: flex;
+    align-items: center;
+    padding: var(--spacing-md) var(--spacing-xl);
+    color: var(--slate-700);
+    text-decoration: none;
+    font-weight: 500;
+    transition: background-color 0.2s;
+}
+
+.drawer-menu-item:hover {
+    background-color: var(--slate-100);
+    color: var(--slate-900);
+}
+
+.drawer-menu-item.active {
+    color: var(--slate-900);
+    background-color: var(--slate-100);
+}
+
+.drawer-footer {
+    padding: var(--spacing-lg);
+    border-top: 1px solid var(--slate-200);
+}
+
+.drawer-footer-item {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) 0;
+    color: var(--slate-600);
+    font-size: var(--font-sm);
+}
+
+.drawer-footer-item i {
+    width: 16px;
+    color: var(--slate-500);
+}
+
+@media (max-width: 480px) {
+    .drawer {
+        width: 280px;
+        left: -280px;
+    }
 } 

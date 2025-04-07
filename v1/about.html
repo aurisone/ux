@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="description" content="Internal medical visit tracking application - not for public use">
+    <title>O aplikaci - Medicínské návštěvy</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .about-page {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: var(--spacing-xl);
+        }
+
+        .about-logo {
+            display: flex;
+            justify-content: center;
+            margin: var(--spacing-xl) 0;
+        }
+
+        .about-logo img {
+            height: 48px;
+            width: auto;
+        }
+
+        .about-content {
+            background-color: white;
+            border-radius: 12px;
+            padding: var(--spacing-xl);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .about-section {
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .about-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .about-section h2 {
+            color: var(--slate-800);
+            font-size: var(--font-lg);
+            margin-bottom: var(--spacing-md);
+            font-weight: 600;
+        }
+
+        .about-section p {
+            color: var(--slate-600);
+            line-height: 1.6;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-md);
+            padding: var(--spacing-md) 0;
+            color: var(--slate-700);
+        }
+
+        .contact-item i {
+            width: 20px;
+            color: var(--slate-500);
+        }
+
+        .contact-item a {
+            color: var(--slate-800);
+            text-decoration: none;
+        }
+
+        .contact-item a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <button id="menu-btn" class="icon-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+        <h1>O aplikaci</h1>
+        <div style="width: 40px;"></div>
+    </header>
+
+    <main class="about-page">
+        <div class="about-logo">
+            <img src="images/auris-logo-%23394E71.svg" alt="Auris Logo">
+        </div>
+
+        <div class="about-content">
+            <div class="about-section">
+                <h2>O aplikaci Medicínské návštěvy</h2>
+                <p>Aplikace Medicínské návštěvy je komplexní nástroj pro správu a sledování lékařských návštěv. Umožňuje jednoduché zaznamenávání návštěv, včetně fotografií, poznámek a hlasových záznamů.</p>
+            </div>
+
+            <div class="about-section">
+                <h2>Kontaktní informace</h2>
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <span>Hotline: +420 800 123 456</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <a href="mailto:podpora@auris.cz">podpora@auris.cz</a>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-clock"></i>
+                    <span>Podpora: Po-Pá, 8:00 - 16:00</span>
+                </div>
+            </div>
+
+            <div class="about-section">
+                <h2>Technická podpora</h2>
+                <p>V případě technických problémů nebo dotazů nás neváhejte kontaktovat. Náš tým podpory je připraven vám pomoci s jakýmkoliv problémem týkajícím se aplikace.</p>
+                <div class="contact-item">
+                    <i class="fas fa-headset"></i>
+                    <span>Technická podpora: +420 800 123 457</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script src="navigation.js"></script>
+</body>
+</html> 
