@@ -1,54 +1,40 @@
-# Medical Visits Web App Prototype
+# Medical Visits Web App - Multiple Versions
 
-A responsive web application prototype for managing medical visits. Built with HTML, CSS, and JavaScript.
+A responsive web application for managing medical visits, with multiple versions for testing different features and UI approaches.
 
-## Features
+## Project Structure
+
+- `index.html` - Homepage with links to different versions
+- `v1/` - Basic version with list view, detail view, and add visit functionality
+- `v2/` - Version with search and filtering capabilities (coming soon)
+- `v3/` - Version with calendar view (coming soon)
+
+## Version 1 Features
 
 - Responsive design that works on mobile, tablet, and desktop
 - List of medical visits with details such as:
-  - Visit name
+  - Visit name (random Czech names)
   - Date and time
   - Duration
   - Number of images
   - Number of notes
 - Visits grouped by date with "Today", "Yesterday" or date headings
 - Interactive elements including menu button and add button
-- Slate color palette from shadcn/ui
+- Detail view for each visit
+- Context menu for visit actions (open, rename, delete)
+- Add visit screen with options for recording, photos, and notes
 
 ## Getting Started
 
 1. Clone this repository
 2. Open `index.html` in your browser
+3. Select a version to use
 
-## Structure
+## Development
 
-- `index.html` - Main HTML structure
-- `styles.css` - Styling with responsive design
-- `app.js` - JavaScript functionality and data handling
-
-## Preview
-
-The application displays a list of medical visits with a clean, modern interface, grouped by date.
-
-Date headings include:
-- "Dnes" (Today) for today's visits
-- "Včera" (Yesterday) for yesterday's visits
-- Calendar date for other days
-
-Each visit item includes:
-- Name of the visit
-- Time in a smaller font
-- Icons for duration, image count, and notes count
-- Menu button (kebab icon) for additional actions
-
-The header includes:
-- Hamburger menu icon on the left
-- "Návštěvy" heading in the center
-- Add button on the right
+Each version is contained in its own directory, allowing for independent development and testing of different features and UI approaches.
 
 ## Future Enhancements
 
-- Add form to create new visits
-- Implement side navigation menu
-- Add detail view for each visit
-- Add search and filter functionality 
+- Version 2: Add search and filter functionality
+- Version 3: Add calendar view for better date visualization 

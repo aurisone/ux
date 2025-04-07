@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="googlebot" content="noindex, nofollow">
+    <meta name="description" content="Internal medical visit tracking application - not for public use">
+    <title>Medicínské návštěvy - Verze 1</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <header>
+        <button id="menu-btn" class="icon-btn">
+            <i class="fas fa-bars"></i>
+        </button>
+        <h1>Návštěvy</h1>
+        <button id="add-btn" class="icon-btn">
+            <i class="fas fa-plus"></i>
+        </button>
+    </header>
+    
+    <main>
+        <ul id="visits-list">
+            <!-- Visit items will be added here dynamically -->
+        </ul>
+        
+        <button id="add-visit-btn" class="add-visit-button">
+            <i class="fas fa-plus"></i>
+            <span>Přidat návštěvu</span>
+        </button>
+    </main>
+
+    <script src="app.js"></script>
+</body>
+</html> 

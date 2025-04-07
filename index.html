@@ -6,32 +6,210 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="googlebot" content="noindex, nofollow">
     <meta name="description" content="Internal medical visit tracking application - not for public use">
-    <title>Medicínské návštěvy</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>Medicínské návštěvy - Verze</title>
+    <style>
+        :root {
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-300: #cbd5e1;
+            --slate-400: #94a3b8;
+            --slate-500: #64748b;
+            --slate-600: #475569;
+            --slate-700: #334155;
+            --slate-800: #1e293b;
+            --slate-900: #0f172a;
+            --slate-950: #020617;
+            
+            --font-xs: 0.75rem;
+            --font-sm: 0.875rem;
+            --font-md: 1rem;
+            --font-lg: 1.125rem;
+            --font-xl: 1.25rem;
+            
+            --spacing-xs: 0.25rem;
+            --spacing-sm: 0.5rem;
+            --spacing-md: 0.75rem;
+            --spacing-lg: 1rem;
+            --spacing-xl: 1.5rem;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background-color: var(--slate-100);
+            color: var(--slate-900);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: var(--spacing-xl);
+        }
+
+        header {
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        h1 {
+            font-size: 2rem;
+            color: var(--slate-800);
+            margin-bottom: var(--spacing-md);
+        }
+
+        p {
+            color: var(--slate-600);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .versions-container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: var(--spacing-lg);
+        }
+
+        .version-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: var(--spacing-xl);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .version-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .version-card h2 {
+            font-size: var(--font-xl);
+            color: var(--slate-800);
+            margin-bottom: var(--spacing-sm);
+        }
+
+        .version-card p {
+            color: var(--slate-600);
+            margin-bottom: var(--spacing-md);
+        }
+
+        .version-card .features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--spacing-sm);
+            margin-top: var(--spacing-md);
+        }
+
+        .feature-tag {
+            background-color: var(--slate-100);
+            color: var(--slate-700);
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 16px;
+            font-size: var(--font-xs);
+        }
+
+        .version-badge {
+            display: inline-block;
+            background-color: var(--slate-800);
+            color: white;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 16px;
+            font-size: var(--font-xs);
+            margin-bottom: var(--spacing-sm);
+        }
+        
+        .status-badge {
+            display: inline-block;
+            padding: var(--spacing-xs) var(--spacing-sm);
+            border-radius: 16px;
+            font-size: var(--font-xs);
+            margin-left: var(--spacing-sm);
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background-color: #10b981;
+            color: white;
+        }
+        
+        .status-in-progress {
+            background-color: #f59e0b;
+            color: white;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: var(--spacing-lg);
+            }
+            
+            .version-card {
+                padding: var(--spacing-lg);
+            }
+        }
+    </style>
 </head>
 <body>
     <header>
-        <button id="menu-btn" class="icon-btn">
-            <i class="fas fa-bars"></i>
-        </button>
-        <h1>Návštěvy</h1>
-        <button id="add-btn" class="icon-btn">
-            <i class="fas fa-plus"></i>
-        </button>
+        <h1>Medicínské návštěvy</h1>
+        <p>Vyberte verzi aplikace, kterou chcete použít</p>
     </header>
     
-    <main>
-        <ul id="visits-list">
-            <!-- Visit items will be added here dynamically -->
-        </ul>
+    <div class="versions-container">
+        <a href="v1/index.html" class="version-card">
+            <div>
+                <span class="version-badge">Verze 1</span>
+                <span class="status-badge status-active">Aktivní</span>
+            </div>
+            <h2>Základní verze</h2>
+            <p>Původní verze aplikace s funkcionalitou pro zobrazení návštěv, detailů a přidávání nových návštěv.</p>
+            <div class="features">
+                <span class="feature-tag">Seznam návštěv</span>
+                <span class="feature-tag">Detail návštěvy</span>
+                <span class="feature-tag">Přidání návštěvy</span>
+                <span class="feature-tag">Kontextové menu</span>
+            </div>
+        </a>
         
-        <button id="add-visit-btn" class="add-visit-button">
-            <i class="fas fa-plus"></i>
-            <span>Přidat návštěvu</span>
-        </button>
-    </main>
-
-    <script src="app.js"></script>
+        <div class="version-card">
+            <div>
+                <span class="version-badge">Verze 2</span>
+                <span class="status-badge status-in-progress">V přípravě</span>
+            </div>
+            <h2>Verze s alternativním recordingem</h2>
+            <p>...</p>
+            <div class="features">
+                <span class="feature-tag">Vyhledávání</span>
+                <span class="feature-tag">Filtrování</span>
+                <span class="feature-tag">Seznam návštěv</span>
+                <span class="feature-tag">Detail návštěvy</span>
+            </div>
+        </div>
+        
+        <div class="version-card">
+            <div>
+                <span class="version-badge">Verze 3</span>
+                <span class="status-badge status-in-progress">V přípravě</span>
+            </div>
+            <h2>Verze s editací</h2>
+            <p>...</p>
+            <div class="features">
+                <span class="feature-tag">Kalendář</span>
+                <span class="feature-tag">Měsíční přehled</span>
+                <span class="feature-tag">Seznam návštěv</span>
+                <span class="feature-tag">Detail návštěvy</span>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
