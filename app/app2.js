@@ -312,6 +312,13 @@ document.addEventListener('DOMContentLoaded', function() {
                     <i class="far fa-clock"></i>
                     <p>${visit.duration} minut</p>
                 </div>
+                
+                <!-- Medical Report Button -->
+                <button class="medical-report-btn">
+                    <i class="fas fa-file-medical"></i>
+                    Lékařská zpráva
+                </button>
+                
                 <div class="detail-section">
                     <h3>Fotografie (${visit.images.length})</h3>
                     <div class="detail-images">
@@ -343,6 +350,14 @@ document.addEventListener('DOMContentLoaded', function() {
         // Show detail view and hide list
         document.getElementById('visits-list').style.display = 'none';
         detailView.style.display = 'block';
+        
+        // Add Medical Report button functionality
+        const reportBtn = detailView.querySelector('.medical-report-btn');
+        if (reportBtn) {
+            reportBtn.addEventListener('click', function() {
+                showMedicalReport(visit);
+            });
+        }
         
         // Add back button functionality
         document.getElementById('back-btn').addEventListener('click', function() {
@@ -779,4 +794,637 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Add visit button clicked');
         showAddOptionsScreen();
     });
+
+    // Function to show medical report
+    function showMedicalReport(visit) {
+        // Check if the report overlay already exists
+        let reportOverlay = document.querySelector('.medical-report-overlay');
+        if (reportOverlay) {
+            reportOverlay.remove();
+        }
+        
+        // Create and show the report
+        reportOverlay = document.createElement('div');
+        reportOverlay.className = 'medical-report-overlay';
+        
+        // Format date for display
+        const date = new Date(visit.date + 'T' + visit.time);
+        const day = date.getDate().toString().padStart(2, '0');
+        const month = (date.getMonth() + 1).toString().padStart(2, '0');
+        const year = date.getFullYear();
+        const formattedDate = `${day}.${month}.${year}`;
+        
+        // Create section id from title
+        function createSectionId(title) {
+            return 'section-' + title.toLowerCase().replace(/\s+/g, '-');
+        }
+        
+        // Medical report sections with dummy text
+        const reportSections = [
+            {
+                title: "Anamnéza",
+                content: "Pacient přišel s bolestí v oblasti bederní páteře trvající přibližně 2 týdny. Udává, že bolest se zhoršuje při dlouhodobém sezení a v noci. Neguje úraz či nadměrnou fyzickou zátěž. Pacient nemá v anamnéze předchozí problémy s páteří. Rodinná anamnéza bez významnějších onemocnění."
+            },
+            {
+                title: "Objektivní nález",
+                content: "Při vyšetření zjištěno omezení pohyblivosti bederní páteře, zejména při předklonu. Palpačně zjištěna zvýšená citlivost paravertebrálních svalů v oblasti L3-L5. Lasègueův příznak negativní bilaterálně. Neurologicky bez lateralizace, DK bez poruchy motorické či senzitivní funkce. Reflexy fyziologické."
+            },
+            {
+                title: "Diagnóza",
+                content: "Akutní lumbalgie (M54.5) bez radikulární symptomatiky. Svalový hypertonus v oblasti bederní páteře. Vyloučena hernace meziobratlové ploténky či jiná strukturální patologie páteře na základě klinického vyšetření."
+            },
+            {
+                title: "Navržená vyšetření",
+                content: "Doporučeno RTG bederní páteře ve dvou projekcích k vyloučení strukturálních změn. V případě přetrvávání obtíží déle než 3 týdny zvážit MRI bederní páteře. Laboratorní vyšetření: KO, CRP a biochemie pro vyloučení zánětlivého procesu."
+            },
+            {
+                title: "Medikace",
+                content: "Předepsán diklofenak 50 mg 2x denně po jídle po dobu 5 dní, následně dle potřeby. Myorelaxans tolperison 150 mg 3x denně po dobu 7 dní. V případě silnější bolesti tramadol 50 mg 1-2 tablety při bolesti (max. 400 mg denně)."
+            },
+            {
+                title: "Doporučení",
+                content: "Doporučen klidový režim po dobu 3 dnů, omezení sezení a fyzické zátěže. Aplikace suchého tepla na bolestivou oblast 2x denně po dobu 20 minut. Po odeznění akutních obtíží zahájit rehabilitaci – posílit břišní a zádové svalstvo. Nácvik správného způsobu zvedání břemen a držení těla."
+            },
+            {
+                title: "Prognóza",
+                content: "Při dodržení léčebného režimu předpokládáno zlepšení stavu do 2 týdnů s postupným návratem k běžným aktivitám. Riziko recidivy lze snížit pravidelným cvičením a úpravou ergonomie pracovního prostředí."
+            },
+            {
+                title: "Kontrola",
+                content: "Kontrolní vyšetření za 10 dní. V případě zhoršení stavu nebo objevení se nových příznaků (brnění končetin, porucha močení, slabost končetin) nutná okamžitá kontrola. Výsledky RTG vyšetření budou k dispozici do 3 pracovních dnů."
+            }
+        ];
+        
+        // Create a clipboard object to store copied content
+        const clipboard = {
+            content: null,
+            hasContent: function() {
+                return this.content !== null;
+            }
+        };
+        
+        // Create status banner for notifications
+        const statusBanner = document.createElement('div');
+        statusBanner.className = 'status-banner';
+        statusBanner.textContent = '';
+        document.body.appendChild(statusBanner);
+        
+        // Function to show status message
+        function showStatus(message, icon = 'fa-info-circle') {
+            statusBanner.innerHTML = `<i class="fas ${icon}"></i> ${message}`;
+            statusBanner.classList.add('active');
+            setTimeout(() => {
+                statusBanner.classList.remove('active');
+            }, 2000);
+        }
+        
+        // Variables to track edit mode
+        let globalEditMode = false;
+        let pendingChanges = {};
+        let originalContents = {};
+        
+        // Create the medical report modal with two options for editing:
+        // 1. Edit button per section (default)
+        // 2. Global edit mode toggle
+        
+        reportOverlay.innerHTML = `
+            <div class="medical-report-modal">
+                <div class="report-header">
+                    <h2>Lékařská zpráva - ${visit.title}</h2>
+                    <div class="report-header-actions">
+                        <button class="toggle-edit-mode-btn" title="Editovat celou zprávu">
+                            <i class="fas fa-edit"></i> Editovat zprávu
+                        </button>
+                        <button class="report-close">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="global-edit-toolbar" style="display: none;">
+                    <div class="editor-toolbar">
+                        <button class="format-btn" data-format="bold" title="Bold">
+                            <i class="fas fa-bold"></i>
+                        </button>
+                        <button class="format-btn" data-format="italic" title="Italic">
+                            <i class="fas fa-italic"></i>
+                        </button>
+                        <button class="format-btn" data-format="underline" title="Underline">
+                            <i class="fas fa-underline"></i>
+                        </button>
+                        <div class="toolbar-separator"></div>
+                        <button class="format-btn" data-format="list" value="bullet" title="Bullet List">
+                            <i class="fas fa-list-ul"></i>
+                        </button>
+                        <button class="format-btn" data-format="list" value="ordered" title="Numbered List">
+                            <i class="fas fa-list-ol"></i>
+                        </button>
+                        <div class="toolbar-separator"></div>
+                        <button class="format-btn copy-btn" title="Copy Selected Text">
+                            <i class="fas fa-copy"></i>
+                        </button>
+                        <button class="format-btn paste-btn" title="Paste Text" ${clipboard.hasContent() ? '' : 'disabled'}>
+                            <i class="fas fa-paste"></i>
+                        </button>
+                        <div class="toolbar-spacer"></div>
+                    </div>
+                </div>
+                
+                <div class="report-content">
+                    <div class="report-section">
+                        <p><strong>Datum vyšetření:</strong> ${formattedDate}</p>
+                        <p><strong>Čas vyšetření:</strong> ${visit.time}</p>
+                        <p><strong>Trvání:</strong> ${visit.duration} minut</p>
+                    </div>
+                    
+                    ${reportSections.map(section => `
+                        <div class="report-section" id="${createSectionId(section.title)}">
+                            <div class="section-header">
+                                <h3 class="report-section-title">${section.title}</h3>
+                                <button class="edit-section-btn" data-section="${createSectionId(section.title)}">
+                                    <i class="fas fa-edit"></i>
+                                </button>
+                            </div>
+                            <div class="report-section-content" data-section="${createSectionId(section.title)}">
+                                <p>${section.content}</p>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+                
+                <div class="report-footer">
+                    <div class="global-edit-actions" style="display: none;">
+                        <button class="cancel-all-btn">
+                            <i class="fas fa-times"></i> Zrušit změny
+                        </button>
+                        <button class="save-all-btn">
+                            <i class="fas fa-check"></i> Uložit vše
+                        </button>
+                    </div>
+                    <button class="report-print-btn">
+                        <i class="fas fa-print"></i>
+                        Vytisknout zprávu
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        // Add to body
+        document.body.appendChild(reportOverlay);
+        
+        // Add close button functionality
+        const closeBtn = reportOverlay.querySelector('.report-close');
+        closeBtn.addEventListener('click', () => {
+            // Check if there are unsaved changes
+            if (Object.keys(pendingChanges).length > 0) {
+                if (confirm('Máte neuložené změny. Opravdu chcete zavřít zprávu?')) {
+                    reportOverlay.remove();
+                    statusBanner.remove();
+                }
+            } else {
+                reportOverlay.remove();
+                statusBanner.remove();
+            }
+        });
+        
+        // Add print button functionality
+        const printBtn = reportOverlay.querySelector('.report-print-btn');
+        printBtn.addEventListener('click', () => {
+            window.print();
+        });
+        
+        // Function to disable all edit buttons except the current one
+        function disableOtherEditButtons(currentSectionId) {
+            const editButtons = reportOverlay.querySelectorAll('.edit-section-btn');
+            editButtons.forEach(btn => {
+                if (btn.dataset.section !== currentSectionId) {
+                    btn.disabled = true;
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                }
+            });
+        }
+        
+        // Function to enable all edit buttons
+        function enableAllEditButtons() {
+            const editButtons = reportOverlay.querySelectorAll('.edit-section-btn');
+            editButtons.forEach(btn => {
+                btn.disabled = false;
+                btn.style.opacity = '1';
+                btn.style.cursor = 'pointer';
+            });
+        }
+        
+        // Add edit button functionality for individual section editing
+        reportOverlay.querySelectorAll('.edit-section-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                // If we're in global edit mode, don't do individual section editing
+                if (globalEditMode) return;
+                
+                const sectionId = this.dataset.section;
+                const section = document.getElementById(sectionId);
+                const sectionContent = section.querySelector('.report-section-content');
+                
+                // Only make editable if not already in edit mode
+                if (!section.classList.contains('editing')) {
+                    // Disable other edit buttons to enforce single section editing
+                    disableOtherEditButtons(sectionId);
+                    makeEditable(sectionContent, section);
+                }
+            });
+        });
+        
+        // Toggle global edit mode button
+        const toggleEditModeBtn = reportOverlay.querySelector('.toggle-edit-mode-btn');
+        toggleEditModeBtn.addEventListener('click', function() {
+            if (globalEditMode) {
+                // Exit global edit mode
+                exitGlobalEditMode();
+            } else {
+                // Enter global edit mode
+                enterGlobalEditMode();
+            }
+        });
+        
+        // Enter global edit mode
+        function enterGlobalEditMode() {
+            globalEditMode = true;
+            
+            // Update UI
+            toggleEditModeBtn.innerHTML = '<i class="fas fa-times"></i> Zrušit editaci';
+            toggleEditModeBtn.classList.add('active');
+            
+            // Show global toolbar and actions
+            reportOverlay.querySelector('.global-edit-toolbar').style.display = 'block';
+            reportOverlay.querySelector('.global-edit-actions').style.display = 'flex';
+            
+            // Hide individual edit buttons
+            reportOverlay.querySelectorAll('.edit-section-btn').forEach(btn => {
+                btn.style.display = 'none';
+            });
+            
+            // Hide print button during edit mode
+            reportOverlay.querySelector('.report-print-btn').style.display = 'none';
+            
+            // Make all sections editable
+            reportOverlay.querySelectorAll('.report-section-content').forEach(sectionContent => {
+                const sectionId = sectionContent.dataset.section;
+                if (sectionId) { // Skip info section at the top
+                    const section = document.getElementById(sectionId);
+                    
+                    // Store original content
+                    originalContents[sectionId] = sectionContent.innerHTML;
+                    
+                    // Create editor for this section
+                    makeEditableGlobal(sectionContent, section);
+                }
+            });
+            
+            showStatus('Editační režim aktivován', 'fa-edit');
+        }
+        
+        // Exit global edit mode
+        function exitGlobalEditMode() {
+            // Ask for confirmation if there are pending changes
+            if (Object.keys(pendingChanges).length > 0) {
+                if (!confirm('Máte neuložené změny. Opravdu chcete ukončit editační režim?')) {
+                    return;
+                }
+            }
+            
+            globalEditMode = false;
+            
+            // Update UI
+            toggleEditModeBtn.innerHTML = '<i class="fas fa-edit"></i> Editovat zprávu';
+            toggleEditModeBtn.classList.remove('active');
+            
+            // Hide global toolbar and actions
+            reportOverlay.querySelector('.global-edit-toolbar').style.display = 'none';
+            reportOverlay.querySelector('.global-edit-actions').style.display = 'none';
+            
+            // Show individual edit buttons
+            reportOverlay.querySelectorAll('.edit-section-btn').forEach(btn => {
+                btn.style.display = 'block';
+            });
+            
+            // Show print button again
+            reportOverlay.querySelector('.report-print-btn').style.display = 'block';
+            
+            // Reset all sections to original content
+            reportOverlay.querySelectorAll('.report-section-content').forEach(sectionContent => {
+                const sectionId = sectionContent.dataset.section;
+                if (sectionId && originalContents[sectionId]) {
+                    sectionContent.innerHTML = originalContents[sectionId];
+                    
+                    const section = document.getElementById(sectionId);
+                    section.classList.remove('editing');
+                }
+            });
+            
+            // Clear pending changes
+            pendingChanges = {};
+            
+            showStatus('Editační režim ukončen', 'fa-times');
+        }
+        
+        // Add save all button functionality
+        const saveAllBtn = reportOverlay.querySelector('.save-all-btn');
+        saveAllBtn.addEventListener('click', function() {
+            // Save all changes
+            Object.keys(pendingChanges).forEach(sectionId => {
+                const section = document.getElementById(sectionId);
+                const sectionContent = section.querySelector('.report-section-content');
+                sectionContent.innerHTML = pendingChanges[sectionId];
+            });
+            
+            // Exit global edit mode
+            exitGlobalEditMode();
+            
+            showStatus('Všechny změny byly uloženy', 'fa-check');
+        });
+        
+        // Add cancel all button functionality
+        const cancelAllBtn = reportOverlay.querySelector('.cancel-all-btn');
+        cancelAllBtn.addEventListener('click', function() {
+            // Ask for confirmation if there are pending changes
+            if (Object.keys(pendingChanges).length > 0) {
+                if (confirm('Opravdu chcete zrušit všechny změny?')) {
+                    exitGlobalEditMode();
+                }
+            } else {
+                exitGlobalEditMode();
+            }
+        });
+        
+        // Function to make a section editable in global mode
+        function makeEditableGlobal(sectionElement, sectionContainer) {
+            // Mark section as in editing mode
+            sectionContainer.classList.add('editing');
+            
+            // Initialize Quill editor directly
+            const quill = new Quill(sectionElement, {
+                modules: {
+                    toolbar: false  // We're using the global toolbar
+                },
+                theme: 'snow'
+            });
+            
+            // Store the Quill instance on the section for later reference
+            sectionContainer.quill = quill;
+            
+            // Set up the global toolbar to control the active Quill editor
+            setupGlobalToolbar(quill);
+            
+            // Listen for changes and store them in pendingChanges
+            quill.on('text-change', function() {
+                pendingChanges[sectionContainer.id] = quill.root.innerHTML;
+            });
+        }
+        
+        // Function to set up the global toolbar
+        function setupGlobalToolbar(activeQuill) {
+            const toolbar = reportOverlay.querySelector('.global-edit-toolbar .editor-toolbar');
+            
+            // Handle formatting buttons
+            toolbar.querySelectorAll('.format-btn:not(.copy-btn):not(.paste-btn)').forEach(button => {
+                button.onclick = function() {
+                    const format = this.getAttribute('data-format');
+                    const value = this.getAttribute('value') || true;
+                    
+                    // Find the Quill instance that's currently focused
+                    let focusedQuill = activeQuill;
+                    reportOverlay.querySelectorAll('.report-section').forEach(section => {
+                        if (section.quill && section.quill.hasFocus()) {
+                            focusedQuill = section.quill;
+                        }
+                    });
+                    
+                    if (focusedQuill) {
+                        if (format === 'list') {
+                            focusedQuill.format('list', value);
+                        } else {
+                            focusedQuill.format(format, !focusedQuill.getFormat()[format]);
+                        }
+                        
+                        // Update active state visually
+                        if (format !== 'list') {
+                            this.classList.toggle('active', focusedQuill.getFormat()[format]);
+                        }
+                    }
+                };
+            });
+            
+            // Handle copy button
+            const copyBtn = toolbar.querySelector('.copy-btn');
+            copyBtn.onclick = function() {
+                let focusedQuill = null;
+                reportOverlay.querySelectorAll('.report-section').forEach(section => {
+                    if (section.quill && section.quill.hasFocus()) {
+                        focusedQuill = section.quill;
+                    }
+                });
+                
+                if (focusedQuill && focusedQuill.getSelection()) {
+                    const range = focusedQuill.getSelection();
+                    if (range.length > 0) {
+                        const text = focusedQuill.getText(range.index, range.length);
+                        clipboard.content = text;
+                        showStatus('Text byl zkopírován do schránky', 'fa-copy');
+                        
+                        // Enable paste buttons
+                        document.querySelectorAll('.paste-btn').forEach(btn => {
+                            btn.removeAttribute('disabled');
+                        });
+                    }
+                }
+            };
+            
+            // Handle paste button
+            const pasteBtn = toolbar.querySelector('.paste-btn');
+            pasteBtn.onclick = function() {
+                if (clipboard.hasContent()) {
+                    let focusedQuill = null;
+                    reportOverlay.querySelectorAll('.report-section').forEach(section => {
+                        if (section.quill && section.quill.hasFocus()) {
+                            focusedQuill = section.quill;
+                        }
+                    });
+                    
+                    if (focusedQuill) {
+                        const range = focusedQuill.getSelection() || { index: focusedQuill.getLength(), length: 0 };
+                        focusedQuill.insertText(range.index, clipboard.content);
+                        showStatus('Text byl vložen ze schránky', 'fa-paste');
+                    }
+                }
+            };
+        }
+        
+        // Function to make an individual section editable
+        function makeEditable(sectionElement, sectionContainer) {
+            // Mark section as in editing mode
+            sectionContainer.classList.add('editing');
+            
+            // Store original content
+            const originalContent = sectionElement.innerHTML;
+            
+            // Create editor container
+            const editorContainer = document.createElement('div');
+            editorContainer.className = 'editor-container';
+            
+            // Create toolbar
+            const toolbar = document.createElement('div');
+            toolbar.className = 'editor-toolbar';
+            toolbar.innerHTML = `
+                <button class="format-btn" data-format="bold" title="Bold">
+                    <i class="fas fa-bold"></i>
+                </button>
+                <button class="format-btn" data-format="italic" title="Italic">
+                    <i class="fas fa-italic"></i>
+                </button>
+                <button class="format-btn" data-format="underline" title="Underline">
+                    <i class="fas fa-underline"></i>
+                </button>
+                <div class="toolbar-separator"></div>
+                <button class="format-btn" data-format="list" value="bullet" title="Bullet List">
+                    <i class="fas fa-list-ul"></i>
+                </button>
+                <button class="format-btn" data-format="list" value="ordered" title="Numbered List">
+                    <i class="fas fa-list-ol"></i>
+                </button>
+                <div class="toolbar-separator"></div>
+                <button class="format-btn copy-btn" title="Copy Section">
+                    <i class="fas fa-copy"></i>
+                </button>
+                <button class="format-btn paste-btn" title="Paste Section" ${clipboard.hasContent() ? '' : 'disabled'}>
+                    <i class="fas fa-paste"></i>
+                </button>
+                <div class="toolbar-spacer"></div>
+                <div class="editor-actions">
+                    <button class="cancel-btn" title="Cancel">
+                        <i class="fas fa-times"></i> Zrušit
+                    </button>
+                    <button class="save-btn" title="Save">
+                        <i class="fas fa-check"></i> Uložit
+                    </button>
+                </div>
+            `;
+            
+            // Create editor area
+            const editorArea = document.createElement('div');
+            editorArea.className = 'editor-area';
+            
+            // Add toolbar and editor to the container
+            editorContainer.appendChild(toolbar);
+            editorContainer.appendChild(editorArea);
+            
+            // Replace content with editor
+            sectionElement.innerHTML = '';
+            sectionElement.appendChild(editorContainer);
+            
+            // Initialize Quill
+            const quill = new Quill(editorArea, {
+                modules: {
+                    toolbar: false  // We're using our custom toolbar
+                },
+                theme: 'snow'
+            });
+            
+            // Set content in Quill
+            quill.clipboard.dangerouslyPasteHTML(originalContent);
+            
+            // Handle toolbar button clicks
+            const buttons = toolbar.querySelectorAll('.format-btn:not(.copy-btn):not(.paste-btn)');
+            buttons.forEach(button => {
+                button.addEventListener('click', function() {
+                    const format = this.getAttribute('data-format');
+                    const value = this.getAttribute('value') || true;
+                    
+                    if (format === 'list') {
+                        quill.format('list', value);
+                    } else {
+                        quill.format(format, !quill.getFormat()[format]);
+                    }
+                    
+                    // Update active state visually
+                    if (format !== 'list') {
+                        this.classList.toggle('active', quill.getFormat()[format]);
+                    }
+                });
+            });
+            
+            // Handle copy button
+            const copyBtn = toolbar.querySelector('.copy-btn');
+            copyBtn.addEventListener('click', function() {
+                clipboard.content = quill.root.innerHTML;
+                showStatus('Obsah byl zkopírován do schránky', 'fa-copy');
+                
+                // Enable all paste buttons
+                document.querySelectorAll('.paste-btn').forEach(btn => {
+                    btn.removeAttribute('disabled');
+                });
+            });
+            
+            // Handle paste button
+            const pasteBtn = toolbar.querySelector('.paste-btn');
+            pasteBtn.addEventListener('click', function() {
+                if (clipboard.hasContent()) {
+                    quill.clipboard.dangerouslyPasteHTML(clipboard.content);
+                    showStatus('Obsah byl vložen ze schránky', 'fa-paste');
+                }
+            });
+            
+            // Handle save button
+            const saveBtn = toolbar.querySelector('.save-btn');
+            saveBtn.addEventListener('click', function() {
+                // Get the HTML content from Quill
+                const newContent = quill.root.innerHTML;
+                
+                // Replace the editor with the updated content
+                sectionElement.innerHTML = newContent;
+                
+                // Mark the section as not editing
+                sectionContainer.classList.remove('editing');
+                
+                // Enable all edit buttons again
+                enableAllEditButtons();
+                
+                showStatus('Změny byly uloženy', 'fa-check');
+            });
+            
+            // Handle cancel button
+            const cancelBtn = toolbar.querySelector('.cancel-btn');
+            cancelBtn.addEventListener('click', function() {
+                // Restore original content
+                sectionElement.innerHTML = originalContent;
+                
+                // Mark the section as not editing
+                sectionContainer.classList.remove('editing');
+                
+                // Enable all edit buttons again
+                enableAllEditButtons();
+                
+                showStatus('Úpravy byly zrušeny', 'fa-times');
+            });
+            
+            // Focus the editor
+            quill.focus();
+        }
+        
+        // Allow closing by clicking outside
+        reportOverlay.addEventListener('click', (e) => {
+            if (e.target === reportOverlay) {
+                // Check if we're in edit mode
+                if (globalEditMode || document.querySelector('.report-section.editing')) {
+                    // Ask for confirmation
+                    if (confirm('Máte neuložené změny. Opravdu chcete zavřít zprávu?')) {
+                        reportOverlay.remove();
+                        statusBanner.remove();
+                    }
+                } else {
+                    reportOverlay.remove();
+                    statusBanner.remove();
+                }
+            }
+        });
+    }
 }); 
