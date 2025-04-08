@@ -883,20 +883,17 @@ document.addEventListener('DOMContentLoaded', function() {
         let pendingChanges = {};
         let originalContents = {};
         
-        // Create the medical report modal with two options for editing:
-        // 1. Edit button per section (default)
-        // 2. Global edit mode toggle
-        
+        // Create the medical report as a full page layout
         reportOverlay.innerHTML = `
             <div class="medical-report-modal">
                 <div class="report-header">
                     <h2>Lékařská zpráva - ${visit.title}</h2>
                     <div class="report-header-actions">
                         <button class="toggle-edit-mode-btn" title="Editovat celou zprávu">
-                            <i class="fas fa-edit"></i> Editovat zprávu
+                            <i class="fas fa-edit"></i> <span>Editovat zprávu</span>
                         </button>
-                        <button class="report-close">
-                            <i class="fas fa-times"></i>
+                        <button class="back-to-app-btn" title="Zpět do aplikace">
+                            <i class="fas fa-arrow-left"></i> <span>Zpět</span>
                         </button>
                     </div>
                 </div>
@@ -972,18 +969,35 @@ document.addEventListener('DOMContentLoaded', function() {
         // Add to body
         document.body.appendChild(reportOverlay);
         
-        // Add close button functionality
-        const closeBtn = reportOverlay.querySelector('.report-close');
-        closeBtn.addEventListener('click', () => {
+        // Prevent scrolling on the body
+        document.body.style.overflow = 'hidden';
+        
+        // Make the global edit toolbar sticky when scrolling
+        const globalToolbar = reportOverlay.querySelector('.global-edit-toolbar');
+        const reportContent = reportOverlay.querySelector('.report-content');
+        
+        reportContent.addEventListener('scroll', function() {
+            if (reportContent.scrollTop > 10) {
+                globalToolbar.classList.add('sticky');
+            } else {
+                globalToolbar.classList.remove('sticky');
+            }
+        });
+        
+        // Back button functionality (instead of close)
+        const backBtn = reportOverlay.querySelector('.back-to-app-btn');
+        backBtn.addEventListener('click', () => {
             // Check if there are unsaved changes
             if (Object.keys(pendingChanges).length > 0) {
                 if (confirm('Máte neuložené změny. Opravdu chcete zavřít zprávu?')) {
                     reportOverlay.remove();
                     statusBanner.remove();
+                    document.body.style.overflow = ''; // Restore scrolling
                 }
             } else {
                 reportOverlay.remove();
                 statusBanner.remove();
+                document.body.style.overflow = ''; // Restore scrolling
             }
         });
         
@@ -1051,7 +1065,7 @@ document.addEventListener('DOMContentLoaded', function() {
             globalEditMode = true;
             
             // Update UI
-            toggleEditModeBtn.innerHTML = '<i class="fas fa-times"></i> Zrušit editaci';
+            toggleEditModeBtn.innerHTML = '<i class="fas fa-times"></i> <span>Zrušit editaci</span>';
             toggleEditModeBtn.classList.add('active');
             
             // Show global toolbar and actions
@@ -1095,7 +1109,7 @@ document.addEventListener('DOMContentLoaded', function() {
             globalEditMode = false;
             
             // Update UI
-            toggleEditModeBtn.innerHTML = '<i class="fas fa-edit"></i> Editovat zprávu';
+            toggleEditModeBtn.innerHTML = '<i class="fas fa-edit"></i> <span>Editovat zprávu</span>';
             toggleEditModeBtn.classList.remove('active');
             
             // Hide global toolbar and actions
@@ -1332,6 +1346,11 @@ document.addEventListener('DOMContentLoaded', function() {
             // Set content in Quill
             quill.clipboard.dangerouslyPasteHTML(originalContent);
             
+            // Add scrollIntoView to make sure the editor is visible
+            setTimeout(() => {
+                sectionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 100);
+            
             // Handle toolbar button clicks
             const buttons = toolbar.querySelectorAll('.format-btn:not(.copy-btn):not(.paste-btn)');
             buttons.forEach(button => {
@@ -1410,19 +1429,21 @@ document.addEventListener('DOMContentLoaded', function() {
             quill.focus();
         }
         
-        // Allow closing by clicking outside
-        reportOverlay.addEventListener('click', (e) => {
-            if (e.target === reportOverlay) {
+        // Handle keydown events for ESC key to close the report
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
                 // Check if we're in edit mode
                 if (globalEditMode || document.querySelector('.report-section.editing')) {
                     // Ask for confirmation
                     if (confirm('Máte neuložené změny. Opravdu chcete zavřít zprávu?')) {
                         reportOverlay.remove();
                         statusBanner.remove();
+                        document.body.style.overflow = ''; // Restore scrolling
                     }
                 } else {
                     reportOverlay.remove();
                     statusBanner.remove();
+                    document.body.style.overflow = ''; // Restore scrolling
                 }
             }
         });
