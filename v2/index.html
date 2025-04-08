@@ -6,7 +6,7 @@
     <meta name="robots" content="noindex, nofollow">
     <meta name="googlebot" content="noindex, nofollow">
     <meta name="description" content="Internal medical visit tracking application - not for public use">
-    <title>Medicínské návštěvy - Verze 1</title>
+    <title>Medicínské návštěvy</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
@@ -15,7 +15,15 @@
         <button id="menu-btn" class="icon-btn">
             <i class="fas fa-bars"></i>
         </button>
-        <h1>Návštěvy</h1>
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="search-input" placeholder="Hledat návštěvy...">
+                <button id="clear-search" class="search-clear-btn" style="display: none;">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
         <button id="add-btn" class="icon-btn">
             <i class="fas fa-plus"></i>
         </button>

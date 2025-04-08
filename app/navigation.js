@@ -29,8 +29,9 @@ class Navigation {
 
         // Get current page path
         const currentPath = window.location.pathname;
-        const isVisitsPage = currentPath.endsWith('index.html') || currentPath.endsWith('/') || currentPath.endsWith('/v1/');
-        const isAboutPage = currentPath.endsWith('about.html');
+        const isVersion1 = currentPath.includes('index1.html');
+        const isVersion2 = currentPath.includes('index2.html');
+        const isAboutPage = currentPath.includes('about.html');
 
         // Create drawer content
         drawerElement.innerHTML = `
@@ -41,7 +42,7 @@ class Navigation {
                 </button>
             </div>
             <div class="drawer-content">
-                <a href="index.html" class="drawer-menu-item ${isVisitsPage ? 'active' : ''}">
+                <a href="${isVersion2 ? 'index2.html' : 'index1.html'}" class="drawer-menu-item ${isVersion1 || isVersion2 ? 'active' : ''}">
                     <span>Návštěvy</span>
                 </a>
                 <a href="about.html" class="drawer-menu-item ${isAboutPage ? 'active' : ''}">
@@ -115,11 +116,11 @@ class Navigation {
         const menu = document.createElement('div');
         menu.className = 'version-context-menu';
         menu.innerHTML = `
-            <a href="../v1/index.html" class="version-menu-option">
+            <a href="index1.html" class="version-menu-option">
                 <span class="version-badge">Verze 1</span>
                 <span class="status-badge status-active">Aktivní</span>
             </a>
-            <a href="../v2/index.html" class="version-menu-option">
+            <a href="index2.html" class="version-menu-option">
                 <span class="version-badge">Verze 2</span>
                 <span class="status-badge status-in-progress">V přípravě</span>
             </a>

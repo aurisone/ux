@@ -26,7 +26,7 @@ document.addEventListener('DOMContentLoaded', function() {
         'Anna Němcová'
     ];
     
-    // Updated sample data with fixed random names
+    // Updated sample data with fixed random names and specific images
     const visits = [
         {
             id: 1,
@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', function() {
             date: todayStr,
             time: '09:30',
             duration: 45,
-            imageCount: 2,
+            images: ['med1.png', 'med2.png', 'med3.png', 'med4.png', 'med5.png'],
             notesCount: 3
         },
         {
@@ -43,7 +43,7 @@ document.addEventListener('DOMContentLoaded', function() {
             date: todayStr,
             time: '11:00',
             duration: 15,
-            imageCount: 0,
+            images: [],
             notesCount: 1
         },
         {
@@ -52,7 +52,7 @@ document.addEventListener('DOMContentLoaded', function() {
             date: yesterdayStr,
             time: '14:45',
             duration: 30,
-            imageCount: 5,
+            images: ['med2.png', 'med3.png'],
             notesCount: 2
         },
         {
@@ -61,7 +61,7 @@ document.addEventListener('DOMContentLoaded', function() {
             date: yesterdayStr,
             time: '08:15',
             duration: 60,
-            imageCount: 3,
+            images: [],
             notesCount: 4
         },
         {
@@ -70,7 +70,7 @@ document.addEventListener('DOMContentLoaded', function() {
             date: '2023-05-02', 
             time: '13:30',
             duration: 45,
-            imageCount: 1,
+            images: ['med1.png'],
             notesCount: 2
         },
         {
@@ -79,7 +79,7 @@ document.addEventListener('DOMContentLoaded', function() {
             date: '2023-05-02',
             time: '16:00',
             duration: 10,
-            imageCount: 0,
+            images: ['med1.png', 'med2.png'],
             notesCount: 1
         }
     ];
@@ -163,7 +163,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Images detail
         const imagesDetail = document.createElement('div');
         imagesDetail.className = 'visit-detail';
-        imagesDetail.innerHTML = `<i class="far fa-images"></i> ${visit.imageCount}`;
+        imagesDetail.innerHTML = `<i class="far fa-images"></i> ${visit.images.length}`;
         detailsDiv.appendChild(imagesDetail);
         
         // Notes detail
@@ -313,11 +313,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     <p>${visit.duration} minut</p>
                 </div>
                 <div class="detail-section">
-                    <h3>Fotografie (${visit.imageCount})</h3>
+                    <h3>Fotografie (${visit.images.length})</h3>
                     <div class="detail-images">
-                        ${visit.imageCount > 0 ? 
-                            Array(visit.imageCount).fill().map((_, i) => 
-                                `<div class="image-placeholder"><i class="far fa-image"></i></div>`
+                        ${visit.images.length > 0 ? 
+                            visit.images.map(image => 
+                                `<img src="images/${image}" alt="Medical visit image" class="detail-image">`
                             ).join('') : 
                             '<p class="empty-state">Žádné fotografie</p>'
                         }
@@ -532,7 +532,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Handle cancel button
         const cancelBtn = modal.querySelector('.modal-btn-secondary');
         cancelBtn.addEventListener('click', () => modalOverlay.remove());
-            
+
         // Handle rename button
         const renameBtn = modal.querySelector('.modal-btn-primary');
         const input = modal.querySelector('#new-name');
@@ -546,10 +546,10 @@ document.addEventListener('DOMContentLoaded', function() {
             const newName = input.value.trim();
             if (newName !== '') {
                 visit.title = newName;
-            populateVisitsList();
+                populateVisitsList();
                 modalOverlay.remove();
-            console.log(`Visit ${visit.id} renamed to "${newName}"`);
-        }
+                console.log(`Visit ${visit.id} renamed to "${newName}"`);
+            }
         };
 
         renameBtn.addEventListener('click', handleRename);
@@ -586,6 +586,73 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.log(`Visit ${visit.id} deleted`);
             }
         }
+    }
+
+    // Initialize search functionality
+    const searchInput = document.getElementById('search-input');
+    const clearSearchBtn = document.getElementById('clear-search');
+    let searchTimeout;
+
+    // Search input handler
+    searchInput.addEventListener('input', function(e) {
+        const searchText = e.target.value.trim();
+        clearSearchBtn.style.display = searchText ? 'flex' : 'none';
+        
+        // Clear the previous timeout
+        clearTimeout(searchTimeout);
+        
+        // Set a new timeout to prevent too many updates
+        searchTimeout = setTimeout(() => {
+            filterVisits(searchText);
+        }, 300);
+    });
+
+    // Clear search button handler
+    clearSearchBtn.addEventListener('click', function() {
+        searchInput.value = '';
+        clearSearchBtn.style.display = 'none';
+        filterVisits('');
+    });
+
+    // Function to filter visits
+    function filterVisits(searchText) {
+        const visitItems = document.querySelectorAll('.visit-item');
+        const dateHeadings = document.querySelectorAll('.date-heading');
+        const visitGroups = document.querySelectorAll('.visits-group');
+        
+        if (!searchText) {
+            // Show all visits if search is empty
+            visitItems.forEach(item => item.style.display = '');
+            dateHeadings.forEach(heading => heading.style.display = '');
+            visitGroups.forEach(group => group.style.display = '');
+            return;
+        }
+
+        // Convert search text to lower case for case-insensitive search
+        searchText = searchText.toLowerCase();
+
+        // Hide all date headings initially
+        dateHeadings.forEach(heading => heading.style.display = 'none');
+        visitGroups.forEach(group => group.style.display = 'none');
+
+        // Filter visits
+        visitItems.forEach(item => {
+            const title = item.querySelector('.visit-title').textContent.toLowerCase();
+            const details = item.querySelector('.visit-details').textContent.toLowerCase();
+            
+            if (title.includes(searchText) || details.includes(searchText)) {
+                item.style.display = '';
+                // Show parent group and its heading
+                const group = item.closest('.visits-group');
+                const headingId = group.getAttribute('data-date');
+                const heading = document.querySelector(`.date-heading[data-date="${headingId}"]`);
+                
+                group.style.display = '';
+                if (heading) heading.style.display = '';
+            } else {
+                item.style.display = 'none';
+            }
+        });
     }
 
     // Initialize
