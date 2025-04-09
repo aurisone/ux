@@ -899,7 +899,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 
                 <div class="global-edit-toolbar" style="display: none;">
-                    <div class="editor-toolbar">
+                    <div class="format-buttons-container">
                         <button class="format-btn" data-format="bold" title="Bold">
                             <i class="fas fa-bold"></i>
                         </button>
@@ -923,7 +923,14 @@ document.addEventListener('DOMContentLoaded', function() {
                         <button class="format-btn paste-btn" title="Paste Text" ${clipboard.hasContent() ? '' : 'disabled'}>
                             <i class="fas fa-paste"></i>
                         </button>
-                        <div class="toolbar-spacer"></div>
+                    </div>
+                    <div class="toolbar-actions">
+                        <button class="cancel-all-btn">
+                            <i class="fas fa-times"></i> Zrušit změny
+                        </button>
+                        <button class="save-all-btn">
+                            <i class="fas fa-check"></i> Uložit vše
+                        </button>
                     </div>
                 </div>
                 
@@ -950,14 +957,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 </div>
                 
                 <div class="report-footer">
-                    <div class="global-edit-actions" style="display: none;">
-                        <button class="cancel-all-btn">
-                            <i class="fas fa-times"></i> Zrušit změny
-                        </button>
-                        <button class="save-all-btn">
-                            <i class="fas fa-check"></i> Uložit vše
-                        </button>
-                    </div>
                     <button class="report-print-btn">
                         <i class="fas fa-print"></i>
                         Vytisknout zprávu
@@ -1197,7 +1196,7 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Function to set up the global toolbar
         function setupGlobalToolbar(activeQuill) {
-            const toolbar = reportOverlay.querySelector('.global-edit-toolbar .editor-toolbar');
+            const toolbar = reportOverlay.querySelector('.global-edit-toolbar .format-buttons-container');
             
             // Handle formatting buttons
             toolbar.querySelectorAll('.format-btn:not(.copy-btn):not(.paste-btn)').forEach(button => {
@@ -1289,30 +1288,31 @@ document.addEventListener('DOMContentLoaded', function() {
             const toolbar = document.createElement('div');
             toolbar.className = 'editor-toolbar';
             toolbar.innerHTML = `
-                <button class="format-btn" data-format="bold" title="Bold">
-                    <i class="fas fa-bold"></i>
-                </button>
-                <button class="format-btn" data-format="italic" title="Italic">
-                    <i class="fas fa-italic"></i>
-                </button>
-                <button class="format-btn" data-format="underline" title="Underline">
-                    <i class="fas fa-underline"></i>
-                </button>
-                <div class="toolbar-separator"></div>
-                <button class="format-btn" data-format="list" value="bullet" title="Bullet List">
-                    <i class="fas fa-list-ul"></i>
-                </button>
-                <button class="format-btn" data-format="list" value="ordered" title="Numbered List">
-                    <i class="fas fa-list-ol"></i>
-                </button>
-                <div class="toolbar-separator"></div>
-                <button class="format-btn copy-btn" title="Copy Section">
-                    <i class="fas fa-copy"></i>
-                </button>
-                <button class="format-btn paste-btn" title="Paste Section" ${clipboard.hasContent() ? '' : 'disabled'}>
-                    <i class="fas fa-paste"></i>
-                </button>
-                <div class="toolbar-spacer"></div>
+                <div class="format-buttons-container">
+                    <button class="format-btn" data-format="bold" title="Bold">
+                        <i class="fas fa-bold"></i>
+                    </button>
+                    <button class="format-btn" data-format="italic" title="Italic">
+                        <i class="fas fa-italic"></i>
+                    </button>
+                    <button class="format-btn" data-format="underline" title="Underline">
+                        <i class="fas fa-underline"></i>
+                    </button>
+                    <div class="toolbar-separator"></div>
+                    <button class="format-btn" data-format="list" value="bullet" title="Bullet List">
+                        <i class="fas fa-list-ul"></i>
+                    </button>
+                    <button class="format-btn" data-format="list" value="ordered" title="Numbered List">
+                        <i class="fas fa-list-ol"></i>
+                    </button>
+                    <div class="toolbar-separator"></div>
+                    <button class="format-btn copy-btn" title="Copy Section">
+                        <i class="fas fa-copy"></i>
+                    </button>
+                    <button class="format-btn paste-btn" title="Paste Section" ${clipboard.hasContent() ? '' : 'disabled'}>
+                        <i class="fas fa-paste"></i>
+                    </button>
+                </div>
                 <div class="editor-actions">
                     <button class="cancel-btn" title="Cancel">
                         <i class="fas fa-times"></i> Zrušit
@@ -1335,6 +1335,9 @@ document.addEventListener('DOMContentLoaded', function() {
             sectionElement.innerHTML = '';
             sectionElement.appendChild(editorContainer);
             
+            // Add toolbar to document body to be fixed
+            document.body.appendChild(toolbar);
+            
             // Initialize Quill
             const quill = new Quill(editorArea, {
                 modules: {
@@ -1350,6 +1353,16 @@ document.addEventListener('DOMContentLoaded', function() {
             setTimeout(() => {
                 sectionContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }, 100);
+            
+            // Update toolbar position for mobile
+            function updateToolbarPosition() {
+                const headerHeight = document.querySelector('.report-header').offsetHeight;
+                toolbar.style.top = `${headerHeight}px`;
+            }
+            
+            // Call initially and on resize
+            updateToolbarPosition();
+            window.addEventListener('resize', updateToolbarPosition);
             
             // Handle toolbar button clicks
             const buttons = toolbar.querySelectorAll('.format-btn:not(.copy-btn):not(.paste-btn)');
@@ -1404,6 +1417,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Mark the section as not editing
                 sectionContainer.classList.remove('editing');
                 
+                // Remove the toolbar
+                toolbar.remove();
+                
+                // Clean up resize listener
+                window.removeEventListener('resize', updateToolbarPosition);
+                
                 // Enable all edit buttons again
                 enableAllEditButtons();
                 
@@ -1418,6 +1437,12 @@ document.addEventListener('DOMContentLoaded', function() {
                 
                 // Mark the section as not editing
                 sectionContainer.classList.remove('editing');
+                
+                // Remove the toolbar
+                toolbar.remove();
+                
+                // Clean up resize listener
+                window.removeEventListener('resize', updateToolbarPosition);
                 
                 // Enable all edit buttons again
                 enableAllEditButtons();

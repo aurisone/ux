@@ -6,8 +6,7 @@ A responsive web application for managing medical visits, with multiple versions
 
 - `index.html` - Homepage with links to different versions
 - `v1/` - Basic version with list view, detail view, and add visit functionality
-- `v2/` - Version with search and filtering capabilities (coming soon)
-- `v3/` - Version with calendar view (coming soon)
+- `v2/` - Version with TBC features
 
 ## Version 1 Features
 

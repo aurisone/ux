@@ -387,7 +387,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     <div class="detail-images">
                         ${visit.imageCount > 0 ? 
                             Array(visit.imageCount).fill().map((_, i) => 
-                                `<div class="image-placeholder"><i class="far fa-image"></i></div>`
+                                `<div class="detail-image">
+                                    <img src="images/med${(i % 3) + 1}.png" alt="Fotografie z návštěvy">
+                                    <div class="detail-image-overlay">Fotografie z návštěvy</div>
+                                </div>`
                             ).join('') : 
                             '<p class="empty-state">Žádné fotografie</p>'
                         }
@@ -459,7 +462,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Add menu items
                 const menuItems = [
                     { 
-                        text: 'Přejmenovat návštěvu', 
+                        text: 'Podrobnosti', 
                         icon: 'fa-edit', 
                         action: () => {
                             console.log('Rename clicked for visit:', currentVisit);
@@ -600,8 +603,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Add menu items
         const menuItems = [
-            { text: 'Otevřít návštěvu', icon: 'fa-external-link-alt', action: () => openVisitDetail(visit) },
-            { text: 'Přejmenovat návštěvu', icon: 'fa-edit', action: () => renameVisit(visit) },
+            { text: 'Podrobnosti', icon: 'fa-edit', action: () => openVisitDetail(visit) },
+            { text: 'Upravit návštěvu', icon: 'fa-edit', action: () => renameVisit(visit) },
             { text: 'Smazat návštěvu', icon: 'fa-trash-alt', action: () => deleteVisit(visit), isDelete: true }
         ];
         
@@ -654,122 +657,119 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Renaming visit (ID):', visit.id);
         
         // Remove any existing modals
-        const existingModal = document.querySelector('.modal-overlay');
+        const existingModal = document.querySelector('.add-visit-overlay');
         if (existingModal) {
             existingModal.remove();
         }
-
-        // Create modal overlay
-        const modalOverlay = document.createElement('div');
-        modalOverlay.className = 'modal-overlay';
-
-        // Create modal
-        const modal = document.createElement('div');
-        modal.className = 'modal';
-
-        // Create modal content
-        modal.innerHTML = `
-            <div class="modal-header">
-                <h2>Přejmenovat návštěvu</h2>
-                <button class="modal-close">
+        
+        // Create backdrop overlay
+        const backdrop = document.createElement('div');
+        backdrop.className = 'backdrop-overlay';
+        document.body.appendChild(backdrop);
+        
+        // Create form overlay
+        const formOverlay = document.createElement('div');
+        formOverlay.className = 'add-visit-overlay';
+        
+        // Create form content with pre-filled data
+        formOverlay.innerHTML = `
+            <div class="add-visit-header">
+                <div class="empty-space"></div>
+                <h2>Upravit návštěvu</h2>
+                <button class="icon-btn form-close-btn">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <div class="modal-body">
-                <div class="modal-input-group">
-                    <label for="new-name">Nové jméno</label>
-                    <input type="text" id="new-name" class="modal-input" value="${visit.title}">
+            <form class="add-visit-form">
+                <div class="form-group">
+                    <label for="visit-name">Jméno pacienta</label>
+                    <input type="text" id="visit-name" class="form-input" value="${visit.title}" required>
                 </div>
-            </div>
-            <div class="modal-footer">
-                <button class="modal-btn modal-btn-secondary">Zrušit</button>
-                <button class="modal-btn modal-btn-primary">Přejmenovat</button>
-            </div>
+                <div class="form-group">
+                    <label for="personal-id">Osobní číslo</label>
+                    <input type="text" id="personal-id" class="form-input" value="${visit.personalId || ''}" required>
+                </div>
+                <div class="form-group">
+                    <label for="visit-date">Datum návštěvy</label>
+                    <input type="date" id="visit-date" class="form-input" value="${visit.date}" required>
+                </div>
+                <div class="form-group">
+                    <label for="visit-description">Popis návštěvy</label>
+                    <textarea id="visit-description" class="form-textarea">${visit.notes && visit.notes.length > 0 ? visit.notes[0].content : ''}</textarea>
+                </div>
+                <button type="submit" class="create-visit-btn">Uložit změny</button>
+            </form>
         `;
-
-        // Add modal to overlay
-        modalOverlay.appendChild(modal);
-        document.body.appendChild(modalOverlay);
-
-        // Handle close button
-        const closeBtn = modal.querySelector('.modal-close');
-        closeBtn.addEventListener('click', () => modalOverlay.remove());
-
-        // Handle cancel button
-        const cancelBtn = modal.querySelector('.modal-btn-secondary');
-        cancelBtn.addEventListener('click', () => modalOverlay.remove());
-
-        // Handle rename button
-        const renameBtn = modal.querySelector('.modal-btn-primary');
         
-        // Focus the input
-        const input = modal.querySelector('#new-name');
+        document.body.appendChild(formOverlay);
+        
+        // Animate in
         setTimeout(() => {
-        input.focus();
-        input.select();
-        }, 100);
-
-        // Handle rename action
-        const handleRename = () => {
-            const newName = input.value.trim();
-            if (newName !== '') {
-                console.log(`Renaming visit from "${visit.title}" to "${newName}"`);
-                
-                // Update the visit title
-                visit.title = newName;
-                
-                // First check if we're in detail view
-                const detailView = document.getElementById('visit-detail-view');
-                const isInDetailView = detailView && detailView.style.display === 'block';
-                
-                // Update the title in the detail view if it's open
-                if (isInDetailView) {
-                    // Update just the title in the header
-                    const titleElement = detailView.querySelector('.title-container h2');
-                    if (titleElement) {
-                        console.log('Updating title in detail view');
-                        titleElement.textContent = newName;
-                    }
-                }
-                
-                // Find the visit in the visits array to ensure we're updating the correct one
-                const visitInArray = visits.find(v => v.id === visit.id);
-                if (visitInArray) {
-                    visitInArray.title = newName;
-                    console.log('Updated visit in array:', visitInArray);
-                    
-                    // Save to localStorage
-                    saveVisitsToStorage();
-                } else {
-                    console.error('Visit not found in array:', visit.id);
-                }
-                
-                // Only refresh the list view if we're not in detail view
-                if (!isInDetailView) {
-                populateVisitsList();
-                }
-                
-                // Close the modal
-                modalOverlay.remove();
-            }
-        };
-
-        renameBtn.addEventListener('click', handleRename);
+            backdrop.classList.add('active');
+            formOverlay.classList.add('active');
+        }, 10);
         
-        // Handle Enter key
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                handleRename();
-            } else if (e.key === 'Escape') {
-                modalOverlay.remove();
-            }
+        // Focus on first input
+        setTimeout(() => {
+            formOverlay.querySelector('#visit-name').focus();
+        }, 300);
+        
+        // Close button handler
+        const closeBtn = formOverlay.querySelector('.form-close-btn');
+        closeBtn.addEventListener('click', () => {
+            closeAddVisitForm();
         });
-
-        // Close modal when clicking outside
-        modalOverlay.addEventListener('click', (e) => {
-            if (e.target === modalOverlay) {
-                modalOverlay.remove();
+        
+        // Backdrop click handler
+        backdrop.addEventListener('click', () => {
+            closeAddVisitForm();
+        });
+        
+        // Form submit handler
+        const form = formOverlay.querySelector('form');
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Get form values
+            const name = document.getElementById('visit-name').value.trim();
+            const personalId = document.getElementById('personal-id').value.trim();
+            const date = document.getElementById('visit-date').value;
+            const description = document.getElementById('visit-description').value.trim();
+            
+            // Update the visit object
+            visit.title = name;
+            visit.personalId = personalId;
+            visit.date = date;
+            
+            // Update notes if description exists
+            if (description) {
+                if (!visit.notes) {
+                    visit.notes = [];
+                }
+                if (visit.notes.length === 0) {
+                    visit.notes.push({
+                        timestamp: new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit', second: '2-digit' }),
+                        content: description
+                    });
+                } else {
+                    visit.notes[0].content = description;
+                }
+                visit.notesCount = visit.notes.length;
+            }
+            
+            // Save to localStorage
+            saveVisitsToStorage();
+            
+            // Close the form
+            closeAddVisitForm();
+            
+            // Refresh the list and detail view
+            populateVisitsList();
+            
+            // Open the detail view for the edited visit
+            const detailView = document.getElementById('visit-detail-view');
+            if (detailView) {
+                openVisitDetail(visit);
             }
         });
     }
@@ -1081,10 +1081,8 @@ document.addEventListener('DOMContentLoaded', function() {
         // Refresh the list
         populateVisitsList();
         
-        // Optionally, open the detail view for the new visit
-        if (confirm('Návštěva byla vytvořena. Chcete zobrazit detail návštěvy?')) {
-            openVisitDetail(newVisit);
-        }
+        // Open the detail view for the new visit
+        openVisitDetail(newVisit);
     }
 
     // Event handlers for buttons
@@ -1308,4 +1306,28 @@ document.addEventListener('DOMContentLoaded', function() {
         
         console.log('Audio recording stopped');
     }
+
+    // Add visit button click handler
+    addVisitBtn.addEventListener('click', function() {
+        // Create a new visit with default values
+        const newVisit = {
+            id: Date.now().toString(),
+            title: 'Nová návštěva',
+            date: new Date().toISOString().split('T')[0],
+            time: new Date().toLocaleTimeString('cs-CZ', { hour: '2-digit', minute: '2-digit' }),
+            duration: 30,
+            imageCount: 0,
+            notes: [],
+            personalId: ''
+        };
+
+        // Add the new visit to the visits array
+        visits.unshift(newVisit);
+        
+        // Save to localStorage
+        localStorage.setItem('visits', JSON.stringify(visits));
+        
+        // Refresh the visits list
+        renderVisits();
+    });
 }); 
